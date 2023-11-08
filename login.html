@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>User Dashboard</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                text-align: center;
+                margin: 0;
+                padding: 0;
+            }
+
+            .dashboard-container {
+                background-color: #fff;
+                margin: 50px auto;
+                width: 300px;
+                padding: 20px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+
+            h1 {
+                color: #007bff;
+            }
+
+            p {
+                text-align: left;
+                margin-bottom: 10px;
+            }
+
+            button {
+                background-color: #007bff;
+                color: #fff;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+
+            a {
+                text-decoration: none;
+                color: #007bff;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="dashboard-container" id="dashboard">
+            <h1>User Dashboard</h1>
+            <h2>Welcome, <span id="userName"></span></h2>
+            <p><strong>Email:</strong> <span id="userEmail"></span></p>
+            <p><strong>Date of Birth:</strong> <span id="userDob"></span></p>
+            <p>
+                <strong>Subscription:</strong>
+                <span id="userSubscription"></span>
+            </p>
+            <p>
+                <strong>Purchase Code:</strong>
+                <span id="userPurchaseCode"></span>
+            </p>
+            <button id="logout">Logout</button>
+            <p><a href="login.html">Back to Login</a></p>
+        </div>
+
+        <!-- Include the Appwrite SDK and initialize -->
+        <script src="https://cdn.appwrite.io/JS/appwrite.js"></script>
+        <script>
+            const appwrite = new Appwrite();
+
+            appwrite
+                .setEndpoint("https://api.fnukapps.com/v1")
+                .setProject("654acc17f16a39b23f76");
+
+            // Check if the user is logged in
+            appwrite.account
+                .get()
+                .then((response) => {
+                    const user = response["$id"];
+
+                    if (user) {
+                        // Fetch user data
+                        appwrite.database
+                            .listDocuments("users", "", "", 1, 0, user)
+                            .then((response) => {
+                                const userData = response["documents"][0];
+
+                                // Update dashboard with user data
+                                document.getElementById(
+                                    "userName"
+                                ).textContent = userData["name"];
+                                document.getElementById(
+                                    "userEmail"
+                                ).textContent = userData["email"];
+                                document.getElementById("userDob").textContent =
+                                    userData["dob"];
+                                document.getElementById(
+                                    "userSubscription"
+                                ).textContent = userData["subscription"];
+                                document.getElementById(
+                                    "userPurchaseCode"
+                                ).textContent = userData["purchaseCode"];
+                            })
+                            .catch((error) => {
+                                console.error(error);
+                            });
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                });
+
+            // Logout button functionality
+            const logoutButton = document.getElementById("logout");
+            logoutButton.addEventListener("click", () => {
+                appwrite.account.deleteSession("current");
+                window.location.href = "login.html";
+            });
+        </script>
+    </body>
+</html>
